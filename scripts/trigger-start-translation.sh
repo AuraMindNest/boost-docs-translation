@@ -30,7 +30,7 @@ unset _REPO_ROOT
 # Set DEFAULT_VERSION="" to omit version from payload → workflow uses develop.
 # Extensions default to .adoc and .qbk; set DEFAULT_EXTENSIONS="" to omit from payload.
 # ---------------------------------------------------------------------------
-DEFAULT_REPO="CppDigest/boost-docs-translation"
+DEFAULT_REPO="cppalliance/boost-docs-translation"
 DEFAULT_VERSION="boost-1.90.0"
 DEFAULT_EXTENSIONS=".adoc, .qbk"
 

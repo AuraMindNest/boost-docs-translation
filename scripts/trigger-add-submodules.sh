@@ -24,7 +24,7 @@ unset _REPO_ROOT
 # ---------------------------------------------------------------------------
 # Typical run — edit these. CLI flags override (except --token uses env/PAT).
 # ---------------------------------------------------------------------------
-DEFAULT_REPO="CppDigest/boost-docs-translation"
+DEFAULT_REPO="cppalliance/boost-docs-translation"
 DEFAULT_VERSION="boost-1.90.0"
 DEFAULT_SUBMODULES="unordered, json"
 
