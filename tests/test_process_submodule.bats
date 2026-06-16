@@ -69,9 +69,9 @@ teardown() {
     local url="$1" branch="$2" dest="$3" keep="${4:-}"
     local bare=""
     case "$url" in
-      *boostorg/algorithm*) bare="$boost_bare" ;;
-      *testorg/algorithm*) bare="$mirror_bare" ;;
-      *) echo "unexpected clone url: $url" >&2; return 1 ;;
+      *"${BOOST_ORG}/algorithm"*) bare="$boost_bare" ;;
+      *"${MODULE_ORG}/algorithm"*) bare="$mirror_bare" ;;
+      *) echo "unexpected clone url: $url (MODULE_ORG=$MODULE_ORG)" >&2; return 1 ;;
     esac
     mkdir -p "$dest"
     git clone --branch "$branch" "$bare" "$dest"
