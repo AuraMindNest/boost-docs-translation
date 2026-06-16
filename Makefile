@@ -1,3 +1,8 @@
-.PHONY: test
+.PHONY: lint test check
+lint:
+	scripts/lint.sh
+
 test:
-	bats tests/
+	scripts/test.sh
+
+check: lint test

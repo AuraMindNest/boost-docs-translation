@@ -4,6 +4,7 @@
 # MODULE_ORG, MASTER_BRANCH, BOOST_ORG, BOOST_WORK, ORG_WORK, libs_ref,
 # lang_codes_arr, add_or_update (associative), ORG_REPO_MISSING, META_MISSING,
 # NO_DOC_PATHS, GITHUB_WORKSPACE.
+# shellcheck disable=SC2034,SC2154
 
 # Wipe dest_repo (except .git), copy pruned source, commit, push master only.
 sync_repo_master() {

@@ -1,5 +1,6 @@
 # shellcheck shell=bash
 # Shared helpers for bats tests.
+# shellcheck disable=SC2034
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ASSETS_DIR="$REPO_ROOT/.github/workflows/assets"

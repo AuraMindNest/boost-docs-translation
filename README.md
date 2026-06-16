@@ -162,13 +162,25 @@ documented below.
 
 ## Development
 
-Run the shell test suite locally (requires [bats](https://github.com/bats-core/bats-core); on Ubuntu: `apt install bats`):
+Install git hooks (runs lint + tests before each commit):
 
 ```bash
-make test
+scripts/install-git-hooks.sh
 ```
 
-CI runs **`make test`** on every push and pull request alongside ShellCheck and actionlint.
+Requires **git** and **curl** for first-time setup. ShellCheck, actionlint, and bats are
+downloaded automatically into `.cache/` when not already installed (`apt install bats`
+is optional).
+
+Run checks manually:
+
+```bash
+make lint    # ShellCheck + actionlint
+make test    # bats test suite
+make check   # lint + test (same as pre-commit)
+```
+
+CI runs **`make test`** and **`scripts/lint.sh`** on every push and pull request.
 
 ## License
 

@@ -1,5 +1,6 @@
 # shellcheck shell=bash
 # Temp git repos for integration-style tests.
+# shellcheck disable=SC2034
 
 init_git_fixture_root() {
   GIT_FIXTURE_ROOT="$(mktemp -d)"
