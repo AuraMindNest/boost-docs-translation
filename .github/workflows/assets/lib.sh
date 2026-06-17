@@ -15,13 +15,18 @@ set_git_bot_config() {
 repo_exists() { gh repo view "$1/$2" &>/dev/null; }
 
 # Returns 0 if org/repo has an open PR into local-{lang_code} with head matching
-# "translation-{lang_code}-*".
+# "translation-{lang_code}-*"; 1 if none; 2 if the GitHub API check failed.
 has_open_translation_pr() {
   local org="$1" repo="$2" lang_code="$3"
   local base_br="local-${lang_code}"
-  gh pr list --repo "$org/$repo" --state open --base "$base_br" --json headRefName \
+  local output
+  if ! output=$(gh pr list --repo "$org/$repo" --state open --base "$base_br" --json headRefName \
     --jq ".[] | select(.headRefName | startswith(\"translation-${lang_code}-\")) | .headRefName" \
-    2>/dev/null | grep -q .
+    2>&1); then
+    echo "  Error: could not list open PRs for $org/$repo (base=$base_br): $output" >&2
+    return 2
+  fi
+  [[ -n "$output" ]]
 }
 
 # ── Git clone helpers ────────────────────────────────────────────────

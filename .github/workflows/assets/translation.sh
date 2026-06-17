@@ -52,10 +52,11 @@ process_local_branch() {
   local dest_repo="$1" sub_name="$2" lang_code="$3"
   local local_br="local-${lang_code}"
   if git -C "$dest_repo" ls-remote --exit-code --heads origin "$local_br" &>/dev/null; then
-    if has_open_translation_pr "$MODULE_ORG" "$sub_name" "$lang_code"; then
-      echo "  Open translation PR found for $sub_name ($local_br), skipping." >&2
-      return 1
-    fi
+    has_open_translation_pr "$MODULE_ORG" "$sub_name" "$lang_code"
+    case $? in
+      0) echo "  Open translation PR found for $sub_name ($local_br), skipping." >&2; return 1 ;;
+      2) return 2 ;;
+    esac
     update_local_merge_from_master "$dest_repo" "$lang_code" || return 2
   else
     ensure_local_branch_in_repo "$dest_repo" "$sub_name" "$lang_code" || return 2
