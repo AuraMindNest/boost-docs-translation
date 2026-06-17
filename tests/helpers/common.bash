@@ -27,10 +27,12 @@ load_translation() {
 
 # Run a function and capture its exit code (works under set -e in callers).
 run_fn() {
+  local errexit_was_on=0
+  [[ $- == *e* ]] && errexit_was_on=1
   set +e
   "$@"
   local rc=$?
-  set -e
+  (( errexit_was_on )) && set -e || set +e
   return "$rc"
 }
 

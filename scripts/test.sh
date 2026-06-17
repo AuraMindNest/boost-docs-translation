@@ -11,7 +11,7 @@ ensure_bats() {
     return
   fi
 
-  local version="v1.11.1"
+  local bats_commit="b640ec3cf2c7c9cfc9e6351479261186f76eeec8"
   local cache_dir="$ROOT/.cache/bats-core"
   local bin="$cache_dir/bin/bats"
 
@@ -25,10 +25,12 @@ ensure_bats() {
     exit 1
   fi
 
-  echo "test: downloading bats-core ${version}..." >&2
+  echo "test: downloading bats-core ${bats_commit}..." >&2
   rm -rf "$cache_dir"
-  git clone --depth 1 --branch "$version" \
-    https://github.com/bats-core/bats-core.git "$cache_dir"
+  git init -q "$cache_dir"
+  git -C "$cache_dir" remote add origin https://github.com/bats-core/bats-core.git
+  git -C "$cache_dir" fetch --depth 1 origin "$bats_commit"
+  git -C "$cache_dir" checkout -q FETCH_HEAD
   BATS_BIN="$bin"
 }
 

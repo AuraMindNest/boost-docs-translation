@@ -22,6 +22,7 @@ create_bare_remote_with_clone() {
 
   git init --bare "$bare"
   git init "$work"
+  git -C "$work" checkout -b master
   git -C "$work" config user.email "test@test.local"
   git -C "$work" config user.name "Test"
   git -C "$work" remote add origin "$bare"
