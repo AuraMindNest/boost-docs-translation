@@ -264,7 +264,7 @@ require_lang_codes() {
 # Exit 1 if a named variable is unset or empty.
 _require_nonempty() {
   local var_name="$1" err_msg="$2"
-  # shellcheck disable=SC2154
+  # :- keeps indirect expansion safe under set -u when the named var is unset.
   [[ -n "${!var_name:-}" ]] || { echo "$err_msg" >&2; exit 1; }
 }
 
