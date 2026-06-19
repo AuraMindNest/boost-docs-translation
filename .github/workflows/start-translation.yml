@@ -106,7 +106,7 @@ jobs:
           # POST to Weblate add-or-update (async: server returns 202 + task_id quickly).
           # Payload: {organization, add_or_update: {lang_code: [subs...]}, version, extensions}
           trigger_weblate() {
-            # Locals differ from WEBLATE_* env names to avoid actionlint SC2153 misspelling hints.
+            # Locals differ from WEBLATE_* env names to avoid ShellCheck SC2153 misspelling hints.
             local api_base_url="$1" api_token="$2" libs_ref="$3" exts_json="$4"
 
             # Build add_or_update JSON object from associative array.

@@ -87,6 +87,7 @@ ensure_shellcheck() {
 ensure_actionlint() {
   local version="$ACTIONLINT_VERSION"
   local cache_dir="$ROOT/.cache/actionlint"
+  local extract_dir="$cache_dir/actionlint-${version}"
   local bin="$cache_dir/actionlint-bin-${version}"
   mkdir -p "$cache_dir"
 
@@ -141,15 +142,16 @@ ensure_actionlint() {
     curl -fsSL -o "$cache_dir/$tarball" \
       "https://github.com/rhysd/actionlint/releases/download/v${version}/${tarball}"
   fi
-  if [[ ! -x "$cache_dir/actionlint" ]]; then
+  if [[ ! -d "$extract_dir" ]]; then
     if [[ "$os" == "Linux" ]]; then
       echo "${expected_sha256}  $cache_dir/$tarball" | sha256sum -c -
     else
       echo "${expected_sha256}  $cache_dir/$tarball" | shasum -a 256 -c -
     fi
-    tar -xzf "$cache_dir/$tarball" -C "$cache_dir"
+    mkdir -p "$extract_dir"
+    tar -xzf "$cache_dir/$tarball" -C "$extract_dir"
   fi
-  cp "$cache_dir/actionlint" "$bin"
+  cp "$extract_dir/actionlint" "$bin"
   chmod +x "$bin"
   ACTIONLINT_BIN="$bin"
 }
@@ -158,7 +160,7 @@ ensure_shellcheck
 ensure_actionlint
 
 # actionlint shells out to shellcheck for workflow run: scripts; use our pinned binary.
-_shellcheck_dir="$(dirname "$SHELLCHECK_BIN")"
+_shellcheck_dir="$ROOT/.cache/shellcheck/shellcheck-${SHELLCHECK_VERSION}"
 export PATH="${_shellcheck_dir}:${PATH}"
 
 echo "lint: shellcheck ${SHELLCHECK_VERSION} ($("$SHELLCHECK_BIN" --version | head -1))" >&2
