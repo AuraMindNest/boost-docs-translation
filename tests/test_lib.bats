@@ -139,3 +139,70 @@ setup() {
 
   cleanup_git_fixture_root
 }
+
+@test "require_lang_codes: succeeds when LANG_CODES is set" {
+  export LANG_CODES="en,zh_Hans"
+  run require_lang_codes
+  [ "$status" -eq 0 ]
+}
+
+@test "require_lang_codes: fails when LANG_CODES is unset" {
+  unset LANG_CODES
+  run require_lang_codes
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"lang_codes not set"* ]]
+}
+
+@test "require_lang_codes: fails when LANG_CODES is empty" {
+  export LANG_CODES=""
+  run require_lang_codes
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"lang_codes not set"* ]]
+}
+
+@test "validate_secrets: succeeds when required workflow env is set" {
+  load_env
+  export GITHUB_TOKEN="test-token"
+  export LANG_CODES="en"
+  run validate_secrets
+  [ "$status" -eq 0 ]
+}
+
+@test "validate_secrets: fails when GITHUB_TOKEN is unset" {
+  load_env
+  export LANG_CODES="en"
+  unset GITHUB_TOKEN
+  run validate_secrets
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"SYNC_TOKEN secret is not set"* ]]
+}
+
+@test "validate_secrets: fails when LANG_CODES is unset" {
+  load_env
+  export GITHUB_TOKEN="test-token"
+  unset LANG_CODES
+  run validate_secrets
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"lang_codes not set"* ]]
+}
+
+@test "validate_secrets weblate: succeeds when Weblate secrets are set" {
+  load_env
+  export GITHUB_TOKEN="test-token"
+  export LANG_CODES="en"
+  export WEBLATE_URL="https://weblate.example.org"
+  export WEBLATE_TOKEN="weblate-token"
+  run validate_secrets weblate
+  [ "$status" -eq 0 ]
+}
+
+@test "validate_secrets weblate: fails when WEBLATE_URL is unset" {
+  load_env
+  export GITHUB_TOKEN="test-token"
+  export LANG_CODES="en"
+  export WEBLATE_TOKEN="weblate-token"
+  unset WEBLATE_URL
+  run validate_secrets weblate
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"WEBLATE_URL secret is not set"* ]]
+}

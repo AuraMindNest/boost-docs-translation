@@ -255,7 +255,7 @@ validate_lang_codes() {
 
 # Exit 1 if LANG_CODES workflow env is unset or empty.
 require_lang_codes() {
-  [[ -z "${LANG_CODES:-}" ]] && {
+  [[ -n "${LANG_CODES:-}" ]] || {
     echo "Error: lang_codes not set in client_payload or vars.LANG_CODES." >&2
     exit 1
   }

@@ -60,6 +60,12 @@ jobs:
           NO_DOC_PATHS=()
           REPO_EXISTS_SKIP=()
 
+          # shellcheck source=assets/env.sh
+          source "$GITHUB_WORKSPACE/.github/workflows/assets/env.sh"
+          # shellcheck source=assets/lib.sh
+          source "$GITHUB_WORKSPACE/.github/workflows/assets/lib.sh"
+          validate_secrets
+
           WORK_DIR=$(mktemp -d)
           trap 'rm -rf "$WORK_DIR"' EXIT
           BOOST_WORK="$WORK_DIR/boost"
@@ -69,12 +75,6 @@ jobs:
           # Configure git credential helper so all github.com pushes are authenticated
           # without embedding tokens in remote URLs.
           gh auth setup-git
-
-          # shellcheck source=assets/env.sh
-          source "$GITHUB_WORKSPACE/.github/workflows/assets/env.sh"
-          # shellcheck source=assets/lib.sh
-          source "$GITHUB_WORKSPACE/.github/workflows/assets/lib.sh"
-          validate_secrets
 
           # LIBS_REF: workflow env
           # shellcheck disable=SC2153
