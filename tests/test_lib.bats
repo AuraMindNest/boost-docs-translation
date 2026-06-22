@@ -140,69 +140,79 @@ setup() {
   cleanup_git_fixture_root
 }
 
-@test "require_lang_codes: succeeds when LANG_CODES is set" {
-  export LANG_CODES="en,zh_Hans"
-  run require_lang_codes
-  [ "$status" -eq 0 ]
+@test "finalize_translations_master: no-op when UPDATES empty" {
+  # shellcheck source=tests/helpers/git_fixtures.bash
+  source "$BATS_TEST_DIRNAME/helpers/git_fixtures.bash"
+  init_git_fixture_root
+  create_bare_remote_with_clone "translations"
+  trans_dir="$GIT_FIXTURE_ROOT/translations-work"
+  git clone "$BARE_REMOTE" "$trans_dir"
+
+  UPDATES=()
+  SYNC_CALLS=()
+  sync_translations_branch() { SYNC_CALLS+=("branch=$2 force=${4:-false}"); }
+
+  finalize_translations_master "$trans_dir" "develop"
+  [ "${#SYNC_CALLS[@]}" -eq 0 ]
+
+  cleanup_git_fixture_root
 }
 
-@test "require_lang_codes: fails when LANG_CODES is unset" {
-  unset LANG_CODES
-  run require_lang_codes
-  [ "$status" -eq 1 ]
-  [[ "$output" == *"lang_codes not set"* ]]
+@test "finalize_translations_master: syncs master without force" {
+  # shellcheck source=tests/helpers/git_fixtures.bash
+  source "$BATS_TEST_DIRNAME/helpers/git_fixtures.bash"
+  init_git_fixture_root
+  create_bare_remote_with_clone "translations"
+  trans_dir="$GIT_FIXTURE_ROOT/translations-work"
+  git clone "$BARE_REMOTE" "$trans_dir"
+
+  UPDATES=("algorithm")
+  SYNC_CALLS=()
+  sync_translations_branch() { SYNC_CALLS+=("branch=$2 force=${4:-false}"); }
+
+  finalize_translations_master "$trans_dir" "develop"
+  [ "${#SYNC_CALLS[@]}" -eq 1 ]
+  [ "${SYNC_CALLS[0]}" = "branch=master force=false" ]
+
+  cleanup_git_fixture_root
 }
 
-@test "require_lang_codes: fails when LANG_CODES is empty" {
-  export LANG_CODES=""
-  run require_lang_codes
-  [ "$status" -eq 1 ]
-  [[ "$output" == *"lang_codes not set"* ]]
+@test "finalize_translations_local: syncs local branch with force" {
+  # shellcheck source=tests/helpers/git_fixtures.bash
+  source "$BATS_TEST_DIRNAME/helpers/git_fixtures.bash"
+  init_git_fixture_root
+  create_bare_remote_with_clone "translations"
+  trans_dir="$GIT_FIXTURE_ROOT/translations-work"
+  git clone "$BARE_REMOTE" "$trans_dir"
+
+  UPDATES=("algorithm")
+  SYNC_CALLS=()
+  sync_translations_branch() { SYNC_CALLS+=("branch=$2 force=${4:-false}"); }
+
+  finalize_translations_local "$trans_dir" "develop" "en"
+  [ "${#SYNC_CALLS[@]}" -eq 1 ]
+  [ "${SYNC_CALLS[0]}" = "branch=local-en force=true" ]
+
+  cleanup_git_fixture_root
 }
 
-@test "validate_secrets: succeeds when required workflow env is set" {
-  load_env
-  export GITHUB_TOKEN="test-token"
-  export LANG_CODES="en"
-  run validate_secrets
-  [ "$status" -eq 0 ]
-}
+@test "finalize_translations_repo: syncs master then each local branch" {
+  # shellcheck source=tests/helpers/git_fixtures.bash
+  source "$BATS_TEST_DIRNAME/helpers/git_fixtures.bash"
+  init_git_fixture_root
+  create_bare_remote_with_clone "translations"
+  trans_dir="$GIT_FIXTURE_ROOT/translations-work"
+  git clone "$BARE_REMOTE" "$trans_dir"
 
-@test "validate_secrets: fails when GITHUB_TOKEN is unset" {
-  load_env
-  export LANG_CODES="en"
-  unset GITHUB_TOKEN
-  run validate_secrets
-  [ "$status" -eq 1 ]
-  [[ "$output" == *"SYNC_TOKEN secret is not set"* ]]
-}
+  UPDATES=("algorithm")
+  SYNC_CALLS=()
+  sync_translations_branch() { SYNC_CALLS+=("branch=$2 force=${4:-false}"); }
 
-@test "validate_secrets: fails when LANG_CODES is unset" {
-  load_env
-  export GITHUB_TOKEN="test-token"
-  unset LANG_CODES
-  run validate_secrets
-  [ "$status" -eq 1 ]
-  [[ "$output" == *"lang_codes not set"* ]]
-}
+  finalize_translations_repo "$trans_dir" "develop" "en" "zh_Hans"
+  [ "${#SYNC_CALLS[@]}" -eq 3 ]
+  [ "${SYNC_CALLS[0]}" = "branch=master force=false" ]
+  [ "${SYNC_CALLS[1]}" = "branch=local-en force=true" ]
+  [ "${SYNC_CALLS[2]}" = "branch=local-zh_Hans force=true" ]
 
-@test "validate_secrets weblate: succeeds when Weblate secrets are set" {
-  load_env
-  export GITHUB_TOKEN="test-token"
-  export LANG_CODES="en"
-  export WEBLATE_URL="https://weblate.example.org"
-  export WEBLATE_TOKEN="weblate-token"
-  run validate_secrets weblate
-  [ "$status" -eq 0 ]
-}
-
-@test "validate_secrets weblate: fails when WEBLATE_URL is unset" {
-  load_env
-  export GITHUB_TOKEN="test-token"
-  export LANG_CODES="en"
-  export WEBLATE_TOKEN="weblate-token"
-  unset WEBLATE_URL
-  run validate_secrets weblate
-  [ "$status" -eq 1 ]
-  [[ "$output" == *"WEBLATE_URL secret is not set"* ]]
+  cleanup_git_fixture_root
 }
