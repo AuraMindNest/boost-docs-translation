@@ -328,6 +328,19 @@ record_submodule_fatal() {
   SUBMODULE_FATAL+=("$sub_name")
 }
 
+# Summary bucket globals; filled by process_one_submodule before print_submodule_processing_summary.
+init_submodule_summary_buckets() {
+  META_MISSING=()
+  NO_DOC_PATHS=()
+  ORG_REPO_MISSING=()
+}
+
+init_add_submodule_summary_buckets() {
+  META_MISSING=()
+  NO_DOC_PATHS=()
+  REPO_EXISTS_SKIP=()
+}
+
 # Print consolidated success / failure / skip summary after the per-submodule loop.
 print_submodule_processing_summary() {
   local -a processing_errors=() repo_exists_skip=()

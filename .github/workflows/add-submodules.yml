@@ -41,17 +41,13 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Summary buckets (doc metadata / skips); read by print_submodule_processing_summary.
-          META_MISSING=()
-          NO_DOC_PATHS=()
-          REPO_EXISTS_SKIP=()
-
           # shellcheck source=assets/env.sh
           source "$GITHUB_WORKSPACE/.github/workflows/assets/env.sh"
           # shellcheck source=assets/lib.sh
           source "$GITHUB_WORKSPACE/.github/workflows/assets/lib.sh"
 
           init_translation_state
+          init_add_submodule_summary_buckets
 
           begin_phase "$PHASE_SETUP" "Validate inputs and prepare workspace"
           validate_secrets
@@ -200,8 +196,7 @@ jobs:
             fi
           done
 
-          # Buckets populated by process_one_submodule; read in print_submodule_processing_summary.
-          [[ ${#META_MISSING[@]} -ge 0 && ${#NO_DOC_PATHS[@]} -ge 0 && ${#REPO_EXISTS_SKIP[@]} -ge 0 ]]
+          # Buckets filled by process_one_submodule.
           print_submodule_processing_summary
           [[ $submodule_fatal -gt 0 ]] && \
             phase_err "$submodule_fatal submodule(s) failed with errors."

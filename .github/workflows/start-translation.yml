@@ -98,9 +98,6 @@ jobs:
 
           # shellcheck disable=SC2034
           lang_codes_arr=()
-          META_MISSING=()
-          NO_DOC_PATHS=()
-          ORG_REPO_MISSING=()
 
           # shellcheck source=assets/env.sh
           source "$GITHUB_WORKSPACE/.github/workflows/assets/env.sh"
@@ -110,6 +107,7 @@ jobs:
           source "$GITHUB_WORKSPACE/.github/workflows/assets/translation.sh"
 
           init_translation_state
+          init_submodule_summary_buckets
 
           begin_phase "$PHASE_SETUP" "Prepare workspace"
           validate_secrets
@@ -176,8 +174,7 @@ jobs:
             fi
           done
 
-          # Buckets populated by process_one_submodule; read in print_submodule_processing_summary.
-          [[ ${#META_MISSING[@]} -ge 0 && ${#NO_DOC_PATHS[@]} -ge 0 && ${#ORG_REPO_MISSING[@]} -ge 0 ]]
+          # Buckets filled by process_one_submodule.
           print_submodule_processing_summary
           [[ $submodule_fatal -gt 0 ]] && \
             phase_err "$submodule_fatal submodule(s) failed with errors."
@@ -240,10 +237,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          META_MISSING=()
-          NO_DOC_PATHS=()
-          ORG_REPO_MISSING=()
-
           # shellcheck source=assets/env.sh
           source "$GITHUB_WORKSPACE/.github/workflows/assets/env.sh"
           # shellcheck source=assets/lib.sh
@@ -252,6 +245,7 @@ jobs:
           source "$GITHUB_WORKSPACE/.github/workflows/assets/translation.sh"
 
           init_translation_state
+          init_submodule_summary_buckets
 
           begin_phase "$PHASE_SETUP" "Prepare workspace"
           validate_secrets weblate
@@ -317,8 +311,7 @@ jobs:
             fi
           done
 
-          # Buckets populated by process_one_submodule; read in print_submodule_processing_summary.
-          [[ ${#META_MISSING[@]} -ge 0 && ${#NO_DOC_PATHS[@]} -ge 0 && ${#ORG_REPO_MISSING[@]} -ge 0 ]]
+          # Buckets filled by process_one_submodule.
           print_submodule_processing_summary
           [[ $submodule_fatal -gt 0 ]] && \
             phase_err "$submodule_fatal submodule(s) failed with errors."
@@ -329,16 +322,20 @@ jobs:
           finalize_translations_local "$TRANS_DIR" "$LIBS_REF" "$LANG_CODE" || rc=$?
           end_phase
 
-          begin_phase "$PHASE_TRIGGER_WEBLATE" "Trigger Weblate add-or-update"
-          ext_arr=()
-          [[ -n "${EXTENSIONS:-}" ]] && mapfile -t ext_arr < <(parse_extensions "$EXTENSIONS")
-          exts_json="[]"
-          [[ ${#ext_arr[@]} -gt 0 ]] && \
-            exts_json=$(printf '%s\n' "${ext_arr[@]}" | jq -R . | jq -s .)
-
           weblate_rc=0
-          trigger_weblate "$WEBLATE_URL" "$WEBLATE_TOKEN" "$LIBS_REF" "$exts_json" "$LANG_CODE" || weblate_rc=$?
-          end_phase
+          if [[ $rc -eq 0 ]]; then
+            begin_phase "$PHASE_TRIGGER_WEBLATE" "Trigger Weblate add-or-update"
+            ext_arr=()
+            [[ -n "${EXTENSIONS:-}" ]] && mapfile -t ext_arr < <(parse_extensions "$EXTENSIONS")
+            exts_json="[]"
+            [[ ${#ext_arr[@]} -gt 0 ]] && \
+              exts_json=$(printf '%s\n' "${ext_arr[@]}" | jq -R . | jq -s .)
+
+            trigger_weblate "$WEBLATE_URL" "$WEBLATE_TOKEN" "$LIBS_REF" "$exts_json" "$LANG_CODE" || weblate_rc=$?
+            end_phase
+          else
+            echo "Skipping Weblate add-or-update: finalize_translations_local failed (rc=$rc)." >&2
+          fi
 
           exit_rc=0
           [[ $submodule_fatal -gt 0 ]] && exit_rc=1
