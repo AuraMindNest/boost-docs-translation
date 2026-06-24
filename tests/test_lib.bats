@@ -309,6 +309,13 @@ setup() {
   ! is_valid_submodule_name "foo bar"
 }
 
+@test "init_add_or_update_lang: rejects invalid language code" {
+  init_translation_state
+  run init_add_or_update_lang "en US"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"invalid language code"* ]]
+}
+
 @test "record_submodule_update: deduplicates entries" {
   init_translation_state
   record_submodule_update "algorithm"

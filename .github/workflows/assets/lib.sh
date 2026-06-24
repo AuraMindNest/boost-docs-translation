@@ -268,6 +268,10 @@ init_translation_state() {
 
 init_add_or_update_lang() {
   local lang_code="$1"
+  is_valid_lang_code "$lang_code" || {
+    phase_err "invalid language code: '$lang_code'"
+    return 1
+  }
   add_or_update["$lang_code"]=""
 }
 
